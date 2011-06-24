@@ -1,0 +1,10 @@
+# brainfudje
+
+A simple brainf*ck interpreter.
+
+
+## License
+
+Copyright (C) 2011 Justin Hamilton
+
+Distributed under the Eclipse Public License, the same as Clojure.
