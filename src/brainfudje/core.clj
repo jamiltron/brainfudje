@@ -3,9 +3,9 @@
 
 (defn find-char [input curr char func]
   (cond
-     (>= curr (count input)) (- (count input) 1)
+     (>= curr (count input)) (count input)
      (< curr 0) 0
-     (= (nth input curr) char) (func curr)
+     (= (nth input curr) char) (+ curr 1)
      :else (find-char input (func curr) char func)))
 
 (defn bf-interp [input instr d-array ptr]
@@ -41,7 +41,7 @@
         (bf-interp input (+ instr 1) d-array ptr))
    (= (nth input instr) \])
      (if
-        (= 0 (nth d-array ptr)) (bf-interp input (find-char input instr \[ dec) d-array ptr)
+        (not (= 0 (nth d-array ptr))) (bf-interp input (find-char input instr \[ dec) d-array ptr)
         (bf-interp input (+ instr 1) d-array ptr))
    (= (nth input instr)  \.)
      (do
