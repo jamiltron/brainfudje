@@ -1,19 +1,27 @@
 (ns brainfudje.core
   (:require [clojure.contrib.monadic-io-streams :as io]))
+
+(defn find-char [input curr char func]
+  (cond
+     (>= curr (count input)) (- (count input) 1)
+     (< curr 0) 0
+     (= (nth input curr) char) (func curr)
+     :else (find-char input (func curr) char func)))
+
 (defn bf-interp [input instr d-array ptr]
   (cond
    (<= (count input) instr)
      (list d-array ptr)
    (= (nth input instr) \>)
      (cond
-       (= ptr (- (count d-array) 1))
-         (bf-interp input (+ instr 1) d-array ptr)
-       :else
-         (bf-interp input (+ instr 1) d-array (+ ptr 1)))
+        (= ptr (- (count d-array) 1))
+          (bf-interp input (+ instr 1) d-array ptr)
+        :else
+          (bf-interp input (+ instr 1) d-array (+ ptr 1)))
    (= (nth input instr) \<)
      (cond
-       (= ptr 0) (bf-interp input (+ instr 1) d-array ptr)
-       :else (bf-interp input (+ instr 1) d-array (- ptr 1)))
+        (= ptr 0) (bf-interp input (+ instr 1) d-array ptr)
+        :else (bf-interp input (+ instr 1) d-array (- ptr 1)))
    (= (nth input instr) \+) 
      (bf-interp input (+ instr 1)
               (assoc d-array ptr (mod (+ (nth d-array ptr) 1) 256)) ptr)
@@ -27,6 +35,14 @@
            (assoc d-array ptr (mod (+
                                     (nth d-array ptr)
                                     (int (first in))) 256)) ptr))
+   (= (nth input instr) \[)
+     (if
+        (= 0 (nth d-array ptr)) (bf-interp input (find-char input instr \] inc) d-array ptr)
+        (bf-interp input (+ instr 1) d-array ptr))
+   (= (nth input instr) \])
+     (if
+        (= 0 (nth d-array ptr)) (bf-interp input (find-char input instr \[ dec) d-array ptr)
+        (bf-interp input (+ instr 1) d-array ptr))
    (= (nth input instr)  \.)
      (do
        (println (char (nth d-array ptr)))
