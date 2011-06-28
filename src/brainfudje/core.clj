@@ -1,5 +1,4 @@
-(ns brainfudje.core
-  (:require [clojure.contrib.monadic-io-streams :as io]))
+(ns brainfudje.core)
 
 (defn find-char [input curr char func]
   (cond
