@@ -14,33 +14,30 @@
   (loop [instr instr
          d-array d-array
          ptr ptr]
+    (let [top (nth input instr -1)
+          cell (nth d-array ptr)]
       (cond
-       (<= (count input) instr) (list d-array ptr)
-       (= (nth input instr) \>) (cond
-                                 (= ptr (- (count d-array) 1)) (bf-interp input (+ instr 1) d-array ptr)
-                                 :else (recur (+ instr 1) d-array (+ ptr 1)))
-       (= (nth input instr) \<) (cond
-                                 (= ptr 0) (bf-interp input (+ instr 1) d-array ptr)
-                                 :else (recur (+ instr 1) d-array (- ptr 1)))
-       (= (nth input instr) \+) (recur (+ instr 1)
-                                           (assoc d-array ptr (mod (+ (nth d-array ptr) 1) 256)) ptr)
-       (= (nth input instr) \-) (recur (+ instr 1)
-                                           (assoc d-array ptr (mod (- (nth d-array ptr) 1) 256)) ptr)
-       (= (nth input instr) \,) (let [in (read-line)]
-                                  (flush)
-                                  (recur (+ instr 1)
-                                         (assoc d-array ptr (mod (+
-                                                                  (nth d-array ptr)
-                                                                  (int (first in))) 256)) ptr))
-       (= (nth input instr) \[) (if (= 0 (nth d-array ptr)) (recur (find-char input instr \] inc) d-array ptr)
-                                    (recur (+ instr 1) d-array ptr))
-       (= (nth input instr) \]) (if  (not= 0 (nth d-array ptr)) (bf-interp input (find-char input instr \[ dec) d-array ptr)
-                                     (recur (+ instr 1) d-array ptr))
-       (= (nth input instr)  \.) (do
-                                   (println (char (nth d-array ptr)))
-                                   (flush)
-                                   (recur (+ instr 1) d-array ptr))
-       :else (recur (+ instr 1) d-array ptr))))
+       (= -1 top) (list d-array ptr)
+       (= top \>) (cond
+                   (= ptr (- (count d-array) 1)) (recur (+ instr 1) d-array ptr)
+                   :else (recur (+ instr 1) d-array (+ ptr 1)))
+       (= top \<) (cond
+                   (= ptr 0) (bf-interp input (+ instr 1) d-array ptr)
+                   :else (recur (+ instr 1) d-array (- ptr 1)))
+       (= top \+) (recur (+ instr 1) (assoc d-array ptr (mod (+ cell 1) 256)) ptr)
+       (= top \-) (recur (+ instr 1) (assoc d-array ptr (mod (- cell 1) 256)) ptr)
+       (= top \,) (let [in (int (first (read-line)))]
+                    (flush)
+                    (recur (+ instr 1) (assoc d-array ptr (mod (+ cell in) 256)) ptr))
+       (= top \[) (if (= 0 (nth d-array ptr)) (recur (find-char input instr \] inc) d-array ptr)
+                      (recur (+ instr 1) d-array ptr))
+       (= top \]) (if  (not= 0 (nth d-array ptr)) (recur (find-char input instr \[ dec) d-array ptr)
+                       (recur (+ instr 1) d-array ptr))
+       (= top  \.) (do
+                     (println (char (nth d-array ptr)))
+                     (flush)
+                     (recur (+ instr 1) d-array ptr))
+       :else (recur (+ instr 1) d-array ptr)))))
 
 (defn bf-repl [d-array ptr]
   (loop [d-array d-array
