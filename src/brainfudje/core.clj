@@ -1,28 +1,31 @@
 (ns brainfudje.core)
 
 (defn find-char [input curr cha func]
+  "Reads through input, returning the index 1 beyond the nearest character that matches cha, iterating by func"
   (loop [curr curr
          cha cha
          func func]
     (cond
-     (>= curr (count input)) (count input)
-     (< curr 0) 0
-     (= (nth input curr) cha) (+ curr 1)
+     (>= curr (count input)) (count input) 
+     (< curr 0) 0                          
+     (= (nth input curr) cha) (+ curr 1)   ; if found, return the index immediately after cha
      :else (recur (func curr) cha func))))
 
 (defn bf-interp [input instr d-array ptr]
+  "brainfudge's interpreter, keeping track of input, current instruction point,
+  data-array, and data pointer"
   (loop [instr instr
          d-array d-array
          ptr ptr]
     (let [top (nth input instr -1)
           cell (nth d-array ptr)]
       (cond
-       (= -1 top) (list d-array ptr)
+       (= -1 top) (list d-array ptr) ; if the instruction pointer is out-of-bounds return
        (= top \>) (cond
                    (= ptr (- (count d-array) 1)) (recur (+ instr 1) d-array ptr)
                    :else (recur (+ instr 1) d-array (+ ptr 1)))
        (= top \<) (cond
-                   (= ptr 0) (bf-interp input (+ instr 1) d-array ptr)
+                   (= ptr 0) (recur (+ instr 1) d-array ptr)
                    :else (recur (+ instr 1) d-array (- ptr 1)))
        (= top \+) (recur (+ instr 1) (assoc d-array ptr (mod (+ cell 1) 256)) ptr)
        (= top \-) (recur (+ instr 1) (assoc d-array ptr (mod (- cell 1) 256)) ptr)
@@ -40,6 +43,7 @@
        :else (recur (+ instr 1) d-array ptr)))))
 
 (defn bf-repl [d-array ptr]
+  "brainfudge repl, continually updates the d-array and pointer to current cell"
   (loop [d-array d-array
          ptr ptr]
     (do
